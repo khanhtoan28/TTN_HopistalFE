@@ -10,12 +10,12 @@ export default function Home() {
 
       {/* Hero Banner */}
       <section className="relative h-[600px] md:h-[700px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-dark to-primary-dark opacity-90">
-          <div className="absolute inset-0 bg-[url('/hospital-old.jpg')] bg-cover bg-center opacity-30"></div>
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-transparent to-transparent"></div>
+        {/* Background Image */}
+        <div className="absolute inset-0 bg-[url('/img/anh3.jpg')] bg-cover bg-center"></div>
+        {/* Overlay để text dễ đọc */}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/100 via-primary-dark/50 to-primary-dark/10"></div>
         
-        <div className="relative container mx-auto px-4 h-full flex items-center justify-center">
+        <div className="relative container mx-auto px-4 h-full flex items-center justify-center z-10">
           <div className="text-center text-white max-w-4xl">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
               PHÒNG TRUYỀN THỐNG
@@ -26,7 +26,7 @@ export default function Home() {
             <p className="text-xl md:text-2xl mb-8 text-white drop-shadow-lg">
               Kỷ niệm 75 năm thành lập – 1951–2026
             </p>
-            <Link href="/so-vang" className="btn-primary inline-block">
+            <Link href="/so-vang" className="btn-primary inline-block hover:bg-white hover:text-primary-dark">
               Khám phá
             </Link>
           </div>
@@ -40,10 +40,10 @@ export default function Home() {
             {/* Sổ vàng */}
             <Link href="/so-vang" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-primary-dark rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Award className="w-10 h-10 text-white" />
+                <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#C9A227' }}>
+                  <Award className="w-10 h-10" style={{ color: '#8B6B00' }} />
                 </div>
-                <h3 className="text-2xl font-bold text-primary-dark mb-3">
+                <h3 className="group-hover:scale-110 transition-transform opacity-50 group-hover:opacity-100 text-2xl font-bold mb-3" style={{ color: '#C9A227' }}>
                   Sổ vàng
                 </h3>
                 <p className="text-gray-700 mb-4">
@@ -58,10 +58,10 @@ export default function Home() {
             {/* Hiện vật */}
             <Link href="/hien-vat" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-primary-dark rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Archive className="w-10 h-10 text-white" />
+                <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#8B5A2B' }}>
+                  <Archive className="w-10 h-10" style={{ color: '#5C3A1E' }} />
                 </div>
-                <h3 className="text-2xl font-bold text-primary-dark mb-3">
+                <h3 className="group-hover:scale-110 transition-transform opacity-50 group-hover:opacity-100 text-2xl font-bold mb-3" style={{ color: '#8B5A2B' }}>
                   Hiện vật
                 </h3>
                 <p className="text-gray-700 mb-4">
@@ -76,10 +76,10 @@ export default function Home() {
             {/* Dòng lịch sử */}
             <Link href="/timeline" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-primary-dark rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#0B5ED7' }}>
                   <Clock className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-primary-dark mb-3">
+                <h3 className="group-hover:scale-110 transition-transform opacity-50 group-hover:opacity-100 text-2xl font-bold mb-3" style={{ color: '#0B5ED7' }}>
                   Dòng lịch sử
                 </h3>
                 <p className="text-gray-700 mb-4">

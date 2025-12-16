@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 export default function Header() {
@@ -19,12 +20,18 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-              <span className="text-primary-dark font-bold text-xl">BV</span>
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
+              <Image 
+                src="/img/logo.webp" 
+                alt="Logo Bệnh viện Trung ương Thái Nguyên"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <div className="hidden md:block">
-              <div className="text-sm font-semibold">BỆNH VIỆN TRUNG ƯƠNG</div>
-              <div className="text-xs">THÁI NGUYÊN</div>
+              <div className="text-sm font-semibold">BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN</div>
+              <div className="text-xs">THAI NGUYEN NATIONAL HOSPITAL</div>
             </div>
           </Link>
 
