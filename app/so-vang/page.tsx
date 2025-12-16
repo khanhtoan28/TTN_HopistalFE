@@ -46,13 +46,15 @@ const certificates = [
   },
 ]
 
+type YearFilter = number | 'Tất cả'
+
 const levels = ['Tất cả', 'Nhà nước', 'Bộ Y tế', 'Bộ Công An', 'Hội đồng Đội tỉnh', 'Tỉnh', 'Bệnh viện']
 const years = ['Tất cả', 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2015]
 const departments = ['Tất cả', 'Toàn bệnh viện', 'Khoa Nội', 'Khoa Ngoại', 'Khoa Ngoại Nhi', 'Khoa Sản']
 
 export default function SoVangPage() {
   const [selectedLevel, setSelectedLevel] = useState('Tất cả')
-  const [selectedYear, setSelectedYear] = useState('Tất cả')
+  const [selectedYear, setSelectedYear] = useState<YearFilter>('Tất cả')
   const [selectedDepartment, setSelectedDepartment] = useState('Tất cả')
   const [selectedCert, setSelectedCert] = useState<typeof certificates[0] | null>(null)
 
@@ -111,7 +113,10 @@ export default function SoVangPage() {
                 </label>
                 <select
                   value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setSelectedYear(value === 'Tất cả' ? 'Tất cả' : Number(value))
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-dark focus:border-transparent"
                 >
                   {years.map((year) => (
