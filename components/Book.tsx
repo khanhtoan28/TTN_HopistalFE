@@ -21,6 +21,8 @@ interface BookProps {
 export default function Book({ certificates, onPageClick }: BookProps) {
   const [currentPage, setCurrentPage] = useState(0)
   const [isFlipping, setIsFlipping] = useState(false)
+  const [flipDirection, setFlipDirection] = useState<'next' | 'prev' | null>(null)
+  const [flipProgress, setFlipProgress] = useState(0)
 
   // Tổng số trang: 1 trang bìa + certificates
   const totalPages = certificates.length + 1
@@ -28,16 +30,54 @@ export default function Book({ certificates, onPageClick }: BookProps) {
   const handleNext = () => {
     if (currentPage < totalPages - 1 && !isFlipping) {
       setIsFlipping(true)
-      setCurrentPage((prev) => prev + 1)
-      setTimeout(() => setIsFlipping(false), 600)
+      setFlipDirection('next')
+      setFlipProgress(0)
+      
+      // Animation lật trang
+      const duration = 800
+      const startTime = Date.now()
+      const animate = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        setFlipProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        } else {
+          setCurrentPage((prev) => prev + 1)
+          setIsFlipping(false)
+          setFlipDirection(null)
+          setFlipProgress(0)
+        }
+      }
+      requestAnimationFrame(animate)
     }
   }
 
   const handlePrev = () => {
     if (currentPage > 0 && !isFlipping) {
       setIsFlipping(true)
-      setCurrentPage((prev) => prev - 1)
-      setTimeout(() => setIsFlipping(false), 600)
+      setFlipDirection('prev')
+      setFlipProgress(0)
+      
+      // Animation lật trang
+      const duration = 800
+      const startTime = Date.now()
+      const animate = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        setFlipProgress(progress)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        } else {
+          setCurrentPage((prev) => prev - 1)
+          setIsFlipping(false)
+          setFlipDirection(null)
+          setFlipProgress(0)
+        }
+      }
+      requestAnimationFrame(animate)
     }
   }
 
@@ -207,6 +247,106 @@ export default function Book({ certificates, onPageClick }: BookProps) {
   const leftPage = getLeftPage()
   const rightPage = getRightPage()
 
+  // Tính toán nội dung trang đang lật
+  const getFlippingPageContent = () => {
+    if (!isFlipping || !flipDirection) return { front: null, back: null }
+    
+    if (flipDirection === 'next') {
+      // Đang lật sang trang tiếp theo - mặt trước là trang bên phải hiện tại (rightPage)
+      const frontContent = rightPage.type === 'cover'
+        ? { type: 'cover' as const, index: 0 }
+        : rightPage.type === 'cert' && rightPage.index >= 0 && rightPage.index < certificates.length
+        ? { type: 'cert' as const, index: rightPage.index }
+        : null
+      
+      // Mặt sau là trang tiếp theo (sau khi lật, trang này sẽ là trang bên phải mới)
+      const nextPageIndex = currentPage + 1
+      const backContent = nextPageIndex === 1
+        ? { type: 'cert' as const, index: 0 } // Trang tiếp theo là cert[0] (trang 2)
+        : nextPageIndex <= certificates.length
+        ? { type: 'cert' as const, index: nextPageIndex - 1 } // Trang tiếp theo
+        : null
+        
+      return { front: frontContent, back: backContent }
+    } else {
+      // Đang lật về trang trước - mặt trước là trang bên phải hiện tại (rightPage)
+      const frontContent = rightPage.type === 'cover'
+        ? { type: 'cover' as const, index: 0 }
+        : rightPage.type === 'cert' && rightPage.index >= 0 && rightPage.index < certificates.length
+        ? { type: 'cert' as const, index: rightPage.index }
+        : null
+      
+      // Mặt sau là trang bên trái hiện tại (leftPage) - vì khi lật về, trang bên trái sẽ là trang bên phải mới
+      const prevPageIndex = currentPage - 1
+      const backContent = prevPageIndex === 0
+        ? { type: 'cover' as const, index: 0 }
+        : prevPageIndex === 1
+        ? { type: 'cert' as const, index: 0 } // Trang bìa trong = cert[0]
+        : prevPageIndex > 1 && prevPageIndex - 2 >= 0
+        ? { type: 'cert' as const, index: prevPageIndex - 2 } // Trang bên trái hiện tại
+        : null
+        
+      return { front: frontContent, back: backContent }
+    }
+  }
+
+  const flippingContent = getFlippingPageContent()
+  
+  // Helper để render nội dung trang
+  const renderPageContent = (content: { type: 'cover' | 'cert', index: number } | null, pageNum: number) => {
+    if (!content) return null
+    
+    if (content.type === 'cover') {
+      return (
+        <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center">
+          <div className="text-center mb-4">
+            <div className="inline-block border-b-3 border-primary-dark pb-2 mb-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-primary-dark mb-1">
+                SỔ VÀNG
+              </h1>
+              <h2 className="text-lg md:text-xl font-semibold text-primary-dark">
+                BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN
+              </h2>
+            </div>
+            <p className="text-sm text-gray-600 italic mt-2">
+              Kỷ niệm 75 năm thành lập
+            </p>
+            <p className="text-base font-bold text-primary-dark mt-1">
+              1951 - 2026
+            </p>
+          </div>
+          <div className="mb-4">
+            <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
+              <span className="text-5xl">🏆</span>
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-gray-700 text-sm max-w-md">
+              Thành tựu và vinh dự qua 75 năm phát triển
+            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary-dark to-transparent mt-3 mx-auto"></div>
+          </div>
+        </div>
+      )
+    } else {
+      return certificates[content.index] 
+        ? renderCertificatePage(certificates[content.index], pageNum)
+        : null
+    }
+  }
+  
+  // Easing function cho animation mượt mà (giống cuộn giấy)
+  const easeInOutCubic = (t: number): number => {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+  }
+  const easedProgress = easeInOutCubic(flipProgress)
+  
+  const flipRotation = flipDirection === 'next' 
+    ? -180 * easedProgress
+    : flipDirection === 'prev'
+    ? -180 * (1 - easedProgress)
+    : 0
+
   return (
     <>
       <style jsx global>{`
@@ -241,8 +381,6 @@ export default function Book({ certificates, onPageClick }: BookProps) {
           margin: 0;
           padding: 0;
           transform-style: preserve-3d;
-          transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
-          transform-origin: left center;
           box-sizing: border-box;
           border: none;
           outline: none;
@@ -250,12 +388,12 @@ export default function Book({ certificates, onPageClick }: BookProps) {
 
         .book-page.left {
           order: 1;
-          z-index: 1;
+          z-index: 0;
         }
 
         .book-page.right {
           order: 2;
-          z-index: 2;
+          z-index: 1;
         }
 
         .book-page-front,
@@ -271,14 +409,20 @@ export default function Book({ certificates, onPageClick }: BookProps) {
           border: none;
           overflow: visible;
           box-sizing: border-box;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+
+        .book-page-back {
+          transform: rotateY(180deg);
         }
 
         .book-page.left .book-page-back {
-          display: none;
+          display: block;
         }
 
         .book-page.right .book-page-back {
-          display: none;
+          display: block;
         }
 
         .book-page.left .book-page-front {
@@ -290,7 +434,49 @@ export default function Book({ certificates, onPageClick }: BookProps) {
         }
 
         .book-page.flipping {
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+          z-index: 10;
+        }
+
+        .book-page.flipping.right {
+          transform-origin: left center;
+        }
+
+        .book-page.flipping.left {
+          transform-origin: right center;
+        }
+
+        .flipping-page {
+          position: absolute;
+          width: 50%;
+          height: 550px;
+          top: 0;
+          right: 0;
+          transform-style: preserve-3d;
+          transform-origin: left center;
+          z-index: 50;
+          pointer-events: none;
+        }
+
+        .flipping-page-front,
+        .flipping-page-back {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          background: linear-gradient(to bottom right, #fef3c7, #fde68a, #fef3c7);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: 0;
+        }
+
+        .flipping-page-back {
+          transform: rotateY(180deg);
+          box-shadow: 5px 0 15px rgba(0, 0, 0, 0.15) inset;
+        }
+
+        .flipping-page-front {
+          box-shadow: -5px 0 15px rgba(0, 0, 0, 0.15) inset;
         }
 
         .line-clamp-2 {
@@ -352,6 +538,10 @@ export default function Book({ certificates, onPageClick }: BookProps) {
           {/* Trang bên trái (luôn hiển thị) */}
           <div
             className={`book-page left ${isFlipping && currentPage > 0 ? 'flipping' : ''}`}
+            style={{
+              opacity: 1,
+              zIndex: 0,
+            }}
           >
             <div className="book-page-front">
               {leftPage.type === 'empty' ? (
@@ -389,9 +579,46 @@ export default function Book({ certificates, onPageClick }: BookProps) {
             </div>
           </div>
 
+          {/* Trang đang lật (hiển thị khi isFlipping) */}
+          {isFlipping && flippingContent.front && (
+            <div
+              className="flipping-page"
+              style={{
+                transform: `rotateY(${flipRotation}deg)`,
+                transition: 'none',
+                zIndex: 50,
+                boxShadow: `${
+                  Math.abs(flipRotation) < 90 
+                    ? '0 20px 60px rgba(0, 0, 0, 0.3), 0 10px 40px rgba(0, 0, 0, 0.2)'
+                    : '0 30px 80px rgba(0, 0, 0, 0.4), 0 20px 60px rgba(0, 0, 0, 0.3)'
+                }`,
+              }}
+            >
+              <div className="flipping-page-front">
+                {flippingContent.front && renderPageContent(
+                  flippingContent.front,
+                  flippingContent.front.type === 'cover' ? 0 : flippingContent.front.index + 1
+                )}
+              </div>
+              <div className="flipping-page-back">
+                {flippingContent.back && renderPageContent(
+                  flippingContent.back,
+                  flippingContent.back.type === 'cover' 
+                    ? 0 
+                    : flipDirection === 'next'
+                      ? flippingContent.back.index + 2  // Trang tiếp theo sau khi lật (bỏ qua trang lẻ)
+                      : flippingContent.back.index + 1
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Trang bên phải (luôn hiển thị) */}
           <div
             className={`book-page right ${isFlipping ? 'flipping' : ''}`}
+            style={{
+              opacity: 1,
+            }}
           >
             <div className="book-page-front">
               {rightPage.type === 'cover' ? (

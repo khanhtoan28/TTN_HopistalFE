@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Book from '@/components/Book'
-import { Filter, Download, X } from 'lucide-react'
+import { Download, X } from 'lucide-react'
 
 // Dữ liệu mẫu
 const certificates = [
@@ -46,24 +46,8 @@ const certificates = [
   },
 ]
 
-type YearFilter = number | 'Tất cả'
-
-const levels = ['Tất cả', 'Nhà nước', 'Bộ Y tế', 'Bộ Công An', 'Hội đồng Đội tỉnh', 'Tỉnh', 'Bệnh viện']
-const years = ['Tất cả', 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2015]
-const departments = ['Tất cả', 'Toàn bệnh viện', 'Khoa Nội', 'Khoa Ngoại', 'Khoa Ngoại Nhi', 'Khoa Sản']
-
 export default function SoVangPage() {
-  const [selectedLevel, setSelectedLevel] = useState('Tất cả')
-  const [selectedYear, setSelectedYear] = useState<YearFilter>('Tất cả')
-  const [selectedDepartment, setSelectedDepartment] = useState('Tất cả')
   const [selectedCert, setSelectedCert] = useState<typeof certificates[0] | null>(null)
-
-  const filteredCerts = certificates.filter((cert) => {
-    const matchLevel = selectedLevel === 'Tất cả' || cert.level === selectedLevel
-    const matchYear = selectedYear === 'Tất cả' || cert.year === selectedYear
-    const matchDept = selectedDepartment === 'Tất cả' || cert.department === selectedDepartment
-    return matchLevel && matchYear && matchDept
-  })
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -79,78 +63,9 @@ export default function SoVangPage() {
           </p>
         </div>
 
-        {/* Filter Section - Top */}
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center mb-6">
-              <Filter className="w-5 h-5 mr-2 text-primary-dark" />
-              <h2 className="text-xl font-bold text-primary-dark">Bộ lọc</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Lọc theo cấp khen */}
-              <div>
-                <label className="block text-sm font-semibold text-primary-dark mb-2">
-                  Cấp khen
-                </label>
-                <select
-                  value={selectedLevel}
-                  onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-dark focus:border-transparent"
-                >
-                  {levels.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Lọc theo năm */}
-              <div>
-                <label className="block text-sm font-semibold text-primary-dark mb-2">
-                  Năm nhận
-                </label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setSelectedYear(value === 'Tất cả' ? 'Tất cả' : Number(value))
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-dark focus:border-transparent"
-                >
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Lọc theo khoa phòng */}
-              <div>
-                <label className="block text-sm font-semibold text-primary-dark mb-2">
-                  Khoa phòng
-                </label>
-                <select
-                  value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-dark focus:border-transparent"
-                >
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Book Component */}
         <Book
-          certificates={filteredCerts}
+          certificates={certificates}
           onPageClick={(cert) => setSelectedCert(cert)}
         />
       </div>
