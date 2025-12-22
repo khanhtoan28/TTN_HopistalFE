@@ -73,6 +73,15 @@ export default function Book({ certificates, onPageClick }: BookProps) {
     )
   }
 
+  // Render trang bìa cuối
+  const renderBackCoverPage = () => {
+    return (
+      <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-800 via-red-900 to-red-800">
+        
+      </div>
+    )
+  }
+
   // Render trang certificate
   const renderCertificatePage = (cert: Certificate, pageNum: number) => {
     return (
@@ -95,7 +104,8 @@ export default function Book({ certificates, onPageClick }: BookProps) {
               style={{ width: '280px', height: '220px' }}
               onClick={(e) => {
                 e.preventDefault();
-                e.stopPropagation();
+                e.stopPropagation(); // Ngăn sự kiện click truyền lên Flipbook
+                if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation(); // Ngăn chặn tuyệt đối trên các trình duyệt khắt khe
                 setZoomImage(cert.image);
               }}
             >
@@ -181,7 +191,7 @@ export default function Book({ certificates, onPageClick }: BookProps) {
       )
     }
     
-    // Trang lẻ: mặt sau (certificate tiếp theo)
+    // Trang lẻ: mặt sau (certificate tiếp theo hoặc bìa cuối)
     if (i < certificates.length - 1) {
       pages.push(
         <div key={`cert-${i}-back`} className="page">
@@ -189,6 +199,17 @@ export default function Book({ certificates, onPageClick }: BookProps) {
         </div>
       )
     }
+  }
+
+  // Trang bìa cuối: mặt sau của certificate cuối cùng
+  if (certificates.length > 0) {
+    // Tính số trang hiện tại để đánh số trang bìa cuối
+    const lastPageNum = certificates.length * 2 + 1
+    pages.push(
+      <div key="back-cover" className="page">
+        {renderBackCoverPage()}
+      </div>
+    )
   }
 
   if (certificates.length === 0) {
@@ -207,8 +228,14 @@ export default function Book({ certificates, onPageClick }: BookProps) {
         .certificate-image-wrapper {
           position: relative;
           cursor: zoom-in;
-          z-index: 9999;
-          transform: translateZ(50px);
+          /* Quan trọng: Đảm bảo vùng này bắt được click trước khi Flipbook can thiệp */
+          z-index: 100; 
+          pointer-events: auto !important;
+          touch-action: none; /* Ngăn chặn lật trang bằng cảm ứng khi chạm vào ảnh */
+        }
+
+        /* Đảm bảo vùng chứa trang không "nuốt" mất click của các phần tử con */
+        .stf__item {
           pointer-events: auto !important;
         }
 
@@ -319,7 +346,7 @@ export default function Book({ certificates, onPageClick }: BookProps) {
           useMouseEvents={true}
           swipeDistance={30}
           showPageCorners={true}
-          disableFlipByClick={false}
+          disableFlipByClick={true}
         >
           {pages}
         </HTMLFlipBook>
