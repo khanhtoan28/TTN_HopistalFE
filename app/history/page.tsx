@@ -1,69 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
 import { Heart, Building, Rocket, Award } from 'lucide-react'
+import { historyService } from '@/lib/api/services'
+import { History } from '@/lib/api/types'
 
-const milestones = [
-  {
-    year: 1951,
-    title: 'Thành lập',
-    period: '1951',
-    description: 'Bệnh viện Trung ương Thái Nguyên được thành lập, đánh dấu sự khởi đầu của hành trình phục vụ nhân dân. Với đội ngũ y bác sĩ đầu tiên và cơ sở vật chất còn đơn sơ, bệnh viện bắt đầu sứ mệnh chăm sóc sức khỏe cho nhân dân khu vực.',
-    icon: Building,
-    color: 'bg-primary-dark',
-    image: '/img/ảnh 3.png', // Ảnh đen trắng lịch sử
-  },
-  {
-    year: 1965,
-    title: 'Thời chiến',
-    period: '1965-1975',
-    description: 'Trong thời kỳ chiến tranh, bệnh viện vượt qua muôn vàn khó khăn, tiếp tục phục vụ nhân dân và thương binh. Đội ngũ y bác sĩ kiên cường, làm việc trong điều kiện thiếu thốn nhưng vẫn giữ vững tinh thần phục vụ.',
-    icon: Heart,
-    color: 'bg-red-600',
-    image: '/img/ảnh1.png', // Ảnh thời chiến
-  },
-  {
-    year: 1976,
-    title: 'Khôi phục',
-    period: '1976-1995',
-    description: 'Sau chiến tranh, bệnh viện bắt đầu quá trình khôi phục và mở rộng. Đầu tư vào cơ sở hạ tầng, trang thiết bị và đào tạo đội ngũ nhân lực. Số lượng giường bệnh tăng lên, chất lượng dịch vụ được cải thiện đáng kể.',
-    icon: Building,
-    color: 'bg-green-600',
-    image: '/img/ảnh2.png', // Ảnh khôi phục
-  },
-  {
-    year: 1996,
-    title: 'Hiện đại hóa',
-    period: '1996-2010',
-    description: 'Bệnh viện bước vào giai đoạn hiện đại hóa với việc đầu tư mạnh mẽ vào trang thiết bị y tế hiện đại. Áp dụng các kỹ thuật mới, mở rộng các chuyên khoa, nâng cao chất lượng khám chữa bệnh. Trở thành bệnh viện tuyến trung ương hàng đầu khu vực.',
-    icon: Rocket,
-    color: 'bg-blue-600',
-    image: '/img/ảnh 4.png', // Ảnh hiện đại hóa
-  },
-  {
-    year: 2011,
-    title: 'Kỹ thuật cao',
-    period: '2011-2025',
-    description: 'Ứng dụng công nghệ kỹ thuật cao trong chẩn đoán và điều trị. Đầu tư vào các thiết bị hiện đại như MRI, CT scan, hệ thống phẫu thuật nội soi. Phát triển các chuyên khoa sâu, thực hiện nhiều ca phẫu thuật phức tạp. Đạt nhiều thành tựu trong nghiên cứu khoa học và đào tạo.',
-    icon: Award,
-    color: 'bg-purple-600',
-    image: '/img/ảnh 4.png', // Ảnh kỹ thuật cao
-  },
-  {
-    year: 2026,
-    title: '75 năm ngày thành lập',
-    period: '2026',
-    description: 'Kỷ niệm 75 năm thành lập - một hành trình đầy tự hào. Từ những ngày đầu khó khăn đến nay trở thành bệnh viện tuyến trung ương hiện đại, phục vụ hàng triệu lượt bệnh nhân. Tiếp tục phát triển, đổi mới, nâng cao chất lượng dịch vụ y tế.',
-    icon: Award,
-    color: 'bg-yellow-600',
-    image: '/img/ảnh 5.png', // Ảnh 75 năm thành lập
-  },
-]
+interface Milestone {
+  year: number
+  title: string
+  period: string
+  description: string
+  icon: any
+  color: string
+  image: string
+}
 
-function MilestoneItem({ milestone, Icon, isEven }: { milestone: typeof milestones[0], Icon: any, isEven: boolean }) {
+// Map icon names to actual icons
+const iconMap: Record<string, any> = {
+  Building,
+  Heart,
+  Rocket,
+  Award,
+}
+
+// Map period to color
+const getColorByPeriod = (period: string): string => {
+  if (period.includes('1951') || period.includes('1965')) return 'bg-primary-dark'
+  if (period.includes('1965') || period.includes('1975')) return 'bg-red-600'
+  if (period.includes('1976') || period.includes('1995')) return 'bg-green-600'
+  if (period.includes('1996') || period.includes('2010')) return 'bg-blue-600'
+  if (period.includes('2011') || period.includes('2025')) return 'bg-purple-600'
+  return 'bg-yellow-600'
+}
+
+// Get icon by title/keyword
+const getIconByTitle = (title: string): any => {
+  const lowerTitle = title.toLowerCase()
+  if (lowerTitle.includes('chiến') || lowerTitle.includes('khó khăn')) return Heart
+  if (lowerTitle.includes('hiện đại') || lowerTitle.includes('kỹ thuật')) return Rocket
+  if (lowerTitle.includes('thành lập') || lowerTitle.includes('khôi phục')) return Building
+  return Award
+}
+
+function MilestoneItem({ milestone, Icon, isEven }: { milestone: Milestone, Icon: any, isEven: boolean }) {
   const [imageError, setImageError] = useState(false)
 
   return (
@@ -132,6 +114,87 @@ function MilestoneItem({ milestone, Icon, isEven }: { milestone: typeof mileston
 }
 
 export default function LichSuPage() {
+  const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchHistories = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await historyService.getAll()
+        
+        if (response.success && response.data) {
+          // Map dữ liệu từ API format sang format mà component cần
+          const mappedMilestones: Milestone[] = response.data.map((history: History) => {
+            const year = parseInt(history.year) || 1951
+            const Icon = getIconByTitle(history.title)
+            const color = getColorByPeriod(history.period)
+            
+            return {
+              year,
+              title: history.title,
+              period: history.period,
+              description: history.description,
+              icon: Icon,
+              color,
+              image: history.image || '/img/ảnh 3.png', // Fallback image
+            }
+          })
+          
+          // Sắp xếp theo năm
+          mappedMilestones.sort((a, b) => a.year - b.year)
+          setMilestones(mappedMilestones)
+        } else {
+          setError(response.error || 'Không thể tải dữ liệu lịch sử')
+        }
+      } catch (err) {
+        console.error('Error fetching histories:', err)
+        setError('Đã xảy ra lỗi khi tải dữ liệu')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchHistories()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-dark mb-4"></div>
+            <p className="text-lg text-gray-700">Đang tải dữ liệu...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-primary"
+            >
+              Thử lại
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
@@ -153,21 +216,27 @@ export default function LichSuPage() {
           <div className="lg:hidden absolute left-8 w-1 h-full bg-primary-dark opacity-30"></div>
 
           {/* Các mốc */}
-          <div className="space-y-12 lg:space-y-24">
-            {milestones.map((milestone, index) => {
-              const Icon = milestone.icon
-              const isEven = index % 2 === 0
-              
-              return (
-                <MilestoneItem 
-                  key={milestone.year}
-                  milestone={milestone}
-                  Icon={Icon}
-                  isEven={isEven}
-                />
-              )
-            })}
-          </div>
+          {milestones.length > 0 ? (
+            <div className="space-y-12 lg:space-y-24">
+              {milestones.map((milestone, index) => {
+                const Icon = milestone.icon
+                const isEven = index % 2 === 0
+                
+                return (
+                  <MilestoneItem 
+                    key={milestone.year}
+                    milestone={milestone}
+                    Icon={Icon}
+                    isEven={isEven}
+                  />
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-lg text-gray-600">Chưa có dữ liệu lịch sử</p>
+            </div>
+          )}
         </div>
 
         {/* Thống kê */}

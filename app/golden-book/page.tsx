@@ -1,53 +1,96 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Book from '@/components/Book'
 import { Download, X } from 'lucide-react'
+import { goldenBookService } from '@/lib/api/services'
+import { GoldenBook } from '@/lib/api/types'
 
-// Dữ liệu mẫu
-const certificates = [
-  {
-    id: 1,
-    name: 'Tập thể lao động xuất sắc - Khoa Ngoại Nhi',
-    level: 'Bộ Y tế',
-    year: 2019,
-    department: 'Khoa Ngoại Nhi',
-    image: '/img/sovang1.png',
-    description: 'Đã có thành tích xuất sắc thực hiện nhiệm vụ, kế hoạch công tác Y tế năm 2018',
-  },
-  {
-    id: 2,
-    name: 'Bằng khen của Bộ Công An',
-    level: 'Bộ Công An',
-    year: 2019,
-    department: 'Toàn bệnh viện',
-    image: '/img/sovang2.png',
-    description: 'Đã có thành tích xuất sắc trong công tác phối hợp thực hiện nhiệm vụ bảo vệ an ninh quốc gia và bảo đảm trật tự, an toàn xã hội',
-  },
-  {
-    id: 3,
-    name: 'Bằng khen Khoa Ngoại Nhi',
-    level: 'Bộ Y tế',
-    year: 2020,
-    department: 'Khoa Ngoại Nhi',
-    image: '/img/sovang3.png',
-    description: 'Đã có thành tích xuất sắc thực hiện nhiệm vụ, kế hoạch công tác Y tế năm 2018-2019',
-  },
-  {
-    id: 4,
-    name: 'Chứng nhận Liên đội mạnh xuất sắc',
-    level: 'Hội đồng Đội tỉnh',
-    year: 2024,
-    department: 'Toàn bệnh viện',
-    image: '/img/sovang4.png',
-    description: 'Đạt danh hiệu Liên đội mạnh xuất sắc cấp tỉnh năm học 2023-2024',
-  },
-]
+interface Certificate {
+  id: number
+  name: string
+  level: string
+  year: number
+  department: string
+  image: string
+  description: string
+}
 
 export default function SoVangPage() {
-  const [selectedCert, setSelectedCert] = useState<typeof certificates[0] | null>(null)
+  const [certificates, setCertificates] = useState<Certificate[]>([])
+  const [selectedCert, setSelectedCert] = useState<Certificate | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchCertificates = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await goldenBookService.getAll()
+        
+        if (response.success && response.data) {
+          // Map dữ liệu từ API format sang format mà component cần
+          const mappedCertificates: Certificate[] = response.data.map((book: GoldenBook) => ({
+            id: book.goldenBookId,
+            name: book.goldenBookName,
+            level: book.level,
+            year: book.year,
+            department: book.department,
+            image: book.image || '/img/sovang1.png', // Fallback image
+            description: book.description || '',
+          }))
+          setCertificates(mappedCertificates)
+        } else {
+          setError(response.error || 'Không thể tải dữ liệu sổ vàng')
+        }
+      } catch (err) {
+        console.error('Error fetching golden books:', err)
+        setError('Đã xảy ra lỗi khi tải dữ liệu')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCertificates()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-dark mb-4"></div>
+            <p className="text-lg text-gray-700">Đang tải dữ liệu...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-primary"
+            >
+              Thử lại
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -63,11 +106,16 @@ export default function SoVangPage() {
           </p>
         </div>
 
-        {/* Book Component */}
-        <Book
-          certificates={certificates}
-          onPageClick={(cert) => setSelectedCert(cert)}
-        />
+        {certificates.length > 0 ? (
+          <Book
+            certificates={certificates}
+            onPageClick={(cert) => setSelectedCert(cert)}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-lg text-gray-600">Chưa có dữ liệu sổ vàng</p>
+          </div>
+        )}
       </main>
 
       {/* Modal chi tiết */}

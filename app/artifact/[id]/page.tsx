@@ -1,106 +1,107 @@
 'use client'
 
 import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
 import { ArrowLeft, QrCode, Calendar, MapPin } from 'lucide-react'
 import QRCode from 'react-qr-code'
+import { artifactsService } from '@/lib/api/services'
+import { Artifact } from '@/lib/api/types'
 
-// Dữ liệu mẫu - trong thực tế sẽ fetch từ API
-const artifactsData: Record<string, any> = {
-  '1': {
-    id: 1,
-    name: 'Máy X-quang đầu tiên',
-    period: '1951-1965',
-    year: 1952,
-    type: 'Thiết bị',
-    space: 'Khu A',
-    department: 'Khoa Chẩn đoán hình ảnh',
-    description: 'Máy X-quang đầu tiên được sử dụng tại bệnh viện. Đây là thiết bị quan trọng trong việc chẩn đoán bệnh, được nhập khẩu từ nước ngoài và đánh dấu bước tiến lớn trong công nghệ y tế của bệnh viện.',
-    history: 'Máy X-quang này được đưa vào sử dụng năm 1952, là một trong những thiết bị y tế hiện đại đầu tiên của bệnh viện. Trong suốt nhiều năm, nó đã phục vụ hàng nghìn lượt bệnh nhân, góp phần quan trọng vào công tác chẩn đoán và điều trị.',
-    context: 'Thời kỳ đầu thành lập, bệnh viện đang trong quá trình xây dựng và phát triển cơ sở vật chất. Việc có được máy X-quang là một thành tựu lớn, thể hiện sự quan tâm của nhà nước đối với công tác y tế.',
-    images: ['/artifact-1.jpg', '/artifact-1-2.jpg'],
-  },
-  '2': {
-    id: 2,
-    name: 'Sổ sách ghi chép năm 1951',
-    period: '1951-1965',
-    year: 1951,
-    type: 'Giấy tờ',
-    space: 'Khu B',
-    department: 'Phòng Hành chính',
-    description: 'Sổ sách ghi chép bệnh án đầu tiên của bệnh viện, chứa đựng những thông tin quý giá về những ngày đầu hoạt động.',
-    history: 'Đây là cuốn sổ đầu tiên được sử dụng để ghi chép thông tin bệnh nhân khi bệnh viện mới thành lập. Mỗi trang sổ là một câu chuyện, một kỷ niệm về những ngày đầu khó khăn nhưng đầy nhiệt huyết.',
-    context: 'Trong điều kiện thiếu thốn về trang thiết bị, việc ghi chép thủ công là phương pháp duy nhất để lưu trữ thông tin bệnh nhân.',
-    images: ['/artifact-2.jpg'],
-  },
-  '3': {
-    id: 3,
-    name: 'Ảnh tập thể năm 1970',
-    period: '1965-1975',
-    year: 1970,
-    type: 'Hình ảnh',
-    space: 'Khu A',
-    department: 'Toàn bệnh viện',
-    description: 'Ảnh chụp tập thể cán bộ nhân viên năm 1970, ghi lại khoảnh khắc đoàn kết của đội ngũ y bác sĩ trong thời kỳ khó khăn.',
-    history: 'Bức ảnh này được chụp nhân dịp kỷ niệm 19 năm thành lập bệnh viện, thể hiện tinh thần đoàn kết và quyết tâm vượt qua khó khăn.',
-    context: 'Thời kỳ chiến tranh, mặc dù gặp nhiều khó khăn nhưng đội ngũ cán bộ nhân viên vẫn kiên cường phục vụ nhân dân.',
-    images: ['/artifact-3.jpg'],
-  },
-  '4': {
-    id: 4,
-    name: 'Bộ dụng cụ phẫu thuật',
-    period: '1976-1995',
-    year: 1980,
-    type: 'Thiết bị',
-    space: 'Khu C',
-    department: 'Khoa Ngoại',
-    description: 'Bộ dụng cụ phẫu thuật được sử dụng trong thời kỳ khôi phục, là công cụ quan trọng trong các ca phẫu thuật.',
-    history: 'Bộ dụng cụ này đã phục vụ hàng trăm ca phẫu thuật, góp phần cứu sống nhiều bệnh nhân.',
-    context: 'Thời kỳ sau chiến tranh, bệnh viện bắt đầu khôi phục và mở rộng hoạt động.',
-    images: ['/artifact-4.jpg'],
-  },
-  '5': {
-    id: 5,
-    name: 'Giấy phép hoạt động',
-    period: '1951-1965',
-    year: 1951,
-    type: 'Giấy tờ',
-    space: 'Khu B',
-    department: 'Phòng Hành chính',
-    description: 'Giấy phép hoạt động ban đầu của bệnh viện, đánh dấu sự ra đời chính thức.',
-    history: 'Đây là tài liệu pháp lý đầu tiên, cho phép bệnh viện chính thức đi vào hoạt động.',
-    context: 'Ngày thành lập bệnh viện - một cột mốc quan trọng trong lịch sử.',
-    images: ['/artifact-5.jpg'],
-  },
-  '6': {
-    id: 6,
-    name: 'Máy đo huyết áp cổ',
-    period: '1951-1965',
-    year: 1953,
-    type: 'Thiết bị',
-    space: 'Khu A',
-    department: 'Khoa Nội',
-    description: 'Máy đo huyết áp thủy ngân cổ điển, là thiết bị cơ bản nhưng quan trọng trong khám bệnh.',
-    history: 'Máy đo huyết áp này đã phục vụ hàng nghìn lượt khám bệnh trong nhiều năm.',
-    context: 'Thiết bị y tế cơ bản nhưng không thể thiếu trong công tác khám chữa bệnh.',
-    images: ['/artifact-6.jpg'],
-  },
+interface ArtifactDetail {
+  id: number
+  name: string
+  period: string
+  year: number
+  type: string
+  space: string
+  department: string
+  description: string
+  history: string
+  context: string
+  images: string[]
 }
 
 export default function ArtifactDetailPage() {
   const params = useParams()
   const artifactId = params.id as string
-  const artifact = artifactsData[artifactId]
+  const [artifact, setArtifact] = useState<ArtifactDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!artifact) {
+  useEffect(() => {
+    const fetchArtifact = async () => {
+      if (!artifactId) return
+
+      try {
+        setLoading(true)
+        setError(null)
+        const id = parseInt(artifactId)
+        
+        if (isNaN(id)) {
+          setError('ID không hợp lệ')
+          return
+        }
+
+        const response = await artifactsService.getById(id)
+        
+        if (response.success && response.data) {
+          const data = response.data
+          // Map dữ liệu từ API format sang format mà component cần
+          // Lưu ý: API chỉ có artifactId, artifactName, description, imageUrl
+          // Các field khác sẽ dùng giá trị mặc định
+          const mappedArtifact: ArtifactDetail = {
+            id: data.artifactId,
+            name: data.artifactName,
+            period: '1951-2025', // Default value
+            year: 1951, // Default value
+            type: 'Khác', // Default value
+            space: 'Khu A', // Default value
+            department: 'Phòng trưng bày', // Default value
+            description: data.description || '',
+            history: data.description || '', // Dùng description cho history nếu không có
+            context: 'Hiện vật được trưng bày tại phòng truyền thống của bệnh viện.',
+            images: data.imageUrl ? [data.imageUrl] : [],
+          }
+          setArtifact(mappedArtifact)
+        } else {
+          setError(response.error || 'Không tìm thấy hiện vật')
+        }
+      } catch (err) {
+        console.error('Error fetching artifact:', err)
+        setError('Đã xảy ra lỗi khi tải dữ liệu')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchArtifact()
+  }, [artifactId])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-16 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-dark mb-4"></div>
+            <p className="text-lg text-gray-700">Đang tải dữ liệu...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error || !artifact) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-3xl font-bold text-primary-dark mb-4">
-            Không tìm thấy hiện vật
+            {error || 'Không tìm thấy hiện vật'}
           </h1>
           <Link href="/artifact" className="btn-primary inline-block">
             Quay lại danh sách

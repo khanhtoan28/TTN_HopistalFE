@@ -171,34 +171,29 @@ export default function Book({ certificates, onPageClick }: BookProps) {
     </div>
   )
 
-  // Trang 1: Mặt sau bìa (certificate đầu tiên)
-  if (certificates.length > 0) {
+  // Trang 1: Mặt sau bìa (TRỐNG - chỉ có background)
+  pages.push(
+    <div key="cover-back" className="page">
+      {renderBackCoverPage()}
+    </div>
+  )
+
+  // Các trang certificate
+  // Logic: 
+  // - Trang 2, 4, 6, ...: Mặt trước của mỗi certificate
+  // - Trang 3, 5, 7, ...: Mặt sau của certificate trước = Mặt trước của certificate tiếp theo
+  // Vì mặt sau cert[i] = mặt trước cert[i+1], nên chúng ta render:
+  // - cert[0] mặt trước (trang 2)
+  // - cert[1] mặt trước (trang 3) - cũng là mặt sau cert[0]
+  // - cert[2] mặt trước (trang 4) - cũng là mặt sau cert[1]
+  // - ...
+  for (let i = 0; i < certificates.length; i++) {
+    const pageNum = i + 2 // Trang 2, 3, 4, 5, ...
     pages.push(
-      <div key="cover-back" className="page">
-        {renderCertificatePage(certificates[0], 2)}
+      <div key={`cert-${i}`} className="page">
+        {renderCertificatePage(certificates[i], pageNum)}
       </div>
     )
-  }
-
-  // Các trang certificate (mỗi cert 2 trang)
-  for (let i = 0; i < certificates.length; i++) {
-    // Trang chẵn: mặt trước
-    if (i > 0 || certificates.length === 1) {
-      pages.push(
-        <div key={`cert-${i}-front`} className="page">
-          {renderCertificatePage(certificates[i], i * 2 + 2)}
-        </div>
-      )
-    }
-    
-    // Trang lẻ: mặt sau (certificate tiếp theo hoặc bìa cuối)
-    if (i < certificates.length - 1) {
-      pages.push(
-        <div key={`cert-${i}-back`} className="page">
-          {renderCertificatePage(certificates[i + 1], i * 2 + 3)}
-        </div>
-      )
-    }
   }
 
   // Trang bìa cuối: mặt sau của certificate cuối cùng
