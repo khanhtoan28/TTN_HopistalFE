@@ -45,12 +45,18 @@ export interface Artifact {
   artifactName: string;
   description?: string;
   imageUrl?: string;
+  period?: string;
+  type?: string;
+  space?: string;
 }
 
 export interface ArtifactRequest {
   name: string;
   description?: string;
   imageUrl?: string;
+  period?: string;
+  type?: string;
+  space?: string;
 }
 
 // History

@@ -190,9 +190,7 @@ export default function ArtifactDetailPage() {
               <p className="text-gray-700 mb-4 leading-relaxed">
                 {artifact.description}
               </p>
-              <p className="text-gray-700 leading-relaxed">
-                {artifact.history}
-              </p>
+              
             </div>
 
             {/* QR Code */}
