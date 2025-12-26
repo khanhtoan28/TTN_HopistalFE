@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
-import { Heart, Building, Rocket, Award } from 'lucide-react'
+import { Heart, Building, Rocket, Award, Calendar, Users, Activity, Building2 } from 'lucide-react'
 import { historyService } from '@/lib/api/services'
 import { History } from '@/lib/api/types'
+import { motion } from 'framer-motion'
+
 
 interface Milestone {
   year: number
@@ -18,22 +20,117 @@ interface Milestone {
   image: string
 }
 
-// Map icon names to actual icons
-const iconMap: Record<string, any> = {
-  Building,
-  Heart,
-  Rocket,
-  Award,
+// Custom hook for Intersection Observer
+function useScrollReveal() {
+  const [isVisible, setIsVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+
+  useEffect(() => {
+    const currentRef = ref.current
+    if (!currentRef) return
+
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px',
+      }
+    )
+
+    observerRef.current.observe(currentRef)
+
+    return () => {
+      if (observerRef.current && currentRef) {
+        observerRef.current.unobserve(currentRef)
+      }
+    }
+  }, [])
+
+  return [ref, isVisible] as const
 }
 
-// Map period to color
-const getColorByPeriod = (period: string): string => {
-  if (period.includes('1951') || period.includes('1965')) return 'bg-primary-dark'
-  if (period.includes('1965') || period.includes('1975')) return 'bg-red-600'
-  if (period.includes('1976') || period.includes('1995')) return 'bg-green-600'
-  if (period.includes('1996') || period.includes('2010')) return 'bg-blue-600'
-  if (period.includes('2011') || period.includes('2025')) return 'bg-purple-600'
-  return 'bg-yellow-600'
+// Custom hook for counter animation
+function useCounter(end: number | string, duration: number = 2000, isActive: boolean = false) {
+  const [count, setCount] = useState(0)
+  const startTimeRef = useRef<number | null>(null)
+  const animationFrameRef = useRef<number>()
+  const originalValueRef = useRef<number | string>(end)
+
+  useEffect(() => {
+    originalValueRef.current = end
+  }, [end])
+
+  useEffect(() => {
+    if (!isActive) return
+
+    // Parse the end value
+    let numericEnd: number
+    
+    if (typeof end === 'string') {
+      if (end.includes('K')) {
+        const num = parseInt(end.replace(/[^0-9]/g, ''))
+        numericEnd = num * 1000
+      } else if (end.includes('+')) {
+        numericEnd = parseInt(end.replace(/[^0-9]/g, ''))
+      } else {
+        numericEnd = parseInt(end) || 0
+      }
+    } else {
+      numericEnd = end
+    }
+
+    if (isNaN(numericEnd) || numericEnd === 0) return
+
+    setCount(0)
+    startTimeRef.current = null
+
+    const animate = (currentTime: number) => {
+      if (!startTimeRef.current) {
+        startTimeRef.current = currentTime
+      }
+
+      const elapsed = currentTime - startTimeRef.current
+      const progress = Math.min(elapsed / duration, 1)
+
+      // Ease out function
+      const easeOut = 1 - Math.pow(1 - progress, 3)
+      const currentCount = Math.floor(easeOut * numericEnd)
+
+      setCount(currentCount)
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate)
+      } else {
+        setCount(numericEnd)
+      }
+    }
+
+    animationFrameRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
+  }, [end, duration, isActive])
+
+  // Format the output
+  if (typeof originalValueRef.current === 'string') {
+    if (originalValueRef.current.includes('K')) {
+      return `${Math.floor(count / 1000)}K+`
+    }
+    if (originalValueRef.current.includes('+')) {
+      return `${count.toLocaleString()}+`
+    }
+    return count.toLocaleString()
+  }
+  
+  return count.toLocaleString()
 }
 
 // Get icon by title/keyword
@@ -45,69 +142,149 @@ const getIconByTitle = (title: string): any => {
   return Award
 }
 
-function MilestoneItem({ milestone, Icon, isEven }: { milestone: Milestone, Icon: any, isEven: boolean }) {
+// Split-screen milestone item with scroll animation
+function MilestoneItem({ milestone, Icon, isReversed = false }: { milestone: Milestone, Icon: any, isReversed?: boolean }) {
   const [imageError, setImageError] = useState(false)
+  const [textRef, textVisible] = useScrollReveal()
+  const [imageRef, imageVisible] = useScrollReveal()
+
+  // Animation directions change based on isReversed
+  const textDirection = isReversed ? 'translate-x-12' : '-translate-x-12'
+  const imageDirection = isReversed ? '-translate-x-12' : 'translate-x-12'
+
+  // Render content based on isReversed
+  const textContent = (
+    <div
+      ref={textRef}
+      className={`transition-all ease-out ${
+        textVisible
+          ? 'opacity-100 translate-x-0'
+          : `opacity-0 ${textDirection}`
+      }`}
+      style={{ transitionDuration: '800ms' }}
+    >
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-primary-dark rounded-2xl flex items-center justify-center shadow-lg">
+            <Icon className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="text-3xl md:text-4xl font-bold text-primary-dark">
+              {milestone.year}
+            </div>
+            <div className="text-sm text-gray-500 font-medium">
+              {milestone.period}
+            </div>
+          </div>
+        </div>
+        
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-dark leading-tight">
+          {milestone.title}
+        </h2>
+        
+        <p className="text-lg text-gray-700 leading-relaxed">
+          {milestone.description}
+        </p>
+      </div>
+    </div>
+  )
+
+  const imageContent = (
+    <div
+      ref={imageRef}
+      className={`transition-all ease-out ${
+        imageVisible
+          ? 'opacity-100 translate-x-0'
+          : `opacity-0 ${imageDirection}`
+      }`}
+      style={{ transitionDuration: '800ms' }}
+    >
+            <div className="relative">
+              {/* Decorative background elements */}
+              <div className="absolute -top-8 -right-8 w-64 h-64 bg-primary-dark/5 rounded-full blur-3xl -z-10"></div>
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-primary-dark/5 rounded-full blur-2xl -z-10"></div>
+              
+              {/* Dotted pattern overlay */}
+              <div 
+                className="absolute inset-0 opacity-5 -z-10"
+                style={{
+                  backgroundImage: 'radial-gradient(circle, #075EBC 1px, transparent 1px)',
+                  backgroundSize: '24px 24px',
+                }}
+              ></div>
+
+              {/* Image container with modern styling */}
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-white border border-gray-100">
+                {milestone.image && !imageError ? (
+                  <div className="aspect-[1.5/1] relative">
+                    <Image
+                      src={milestone.image}
+                      alt={`${milestone.title} - ${milestone.year}`}
+                      fill
+                      className="object-contain grayscale hover:grayscale-0 transition-all duration-500 p-5"
+                      onError={() => setImageError(true)}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-primary-dark/10 flex items-center justify-center">
+                    <span className="text-6xl opacity-30">📸</span>
+                  </div>
+                )}
+              </div>
+            </div>
+    </div>
+  )
+
+  return (
+    <div className="relative py-0 md:py-0">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {isReversed ? (
+            <>
+              {imageContent}
+              {textContent}
+            </>
+          ) : (
+            <>
+              {textContent}
+              {imageContent}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Stats item component with counter animation
+function StatItem({ 
+  value, 
+  label, 
+  icon: Icon 
+}: { 
+  value: number | string
+  label: string
+  icon: any 
+}) {
+  const [ref, isVisible] = useScrollReveal()
+  const count = useCounter(value, 2000, isVisible)
 
   return (
     <div
-      className={`relative flex flex-col lg:flex-row items-center ${
-        isEven ? 'lg:flex-row-reverse' : ''
-      }`}
+      ref={ref}
+      className="text-center p-6 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
     >
-      {/* Nội dung */}
-      <div
-        className={`w-full lg:w-5/12 ${
-          isEven ? 'lg:pr-8' : 'lg:pl-8'
-        }`}
-      >
-        <div className="card">
-          <div className="flex items-center mb-4">
-            <div
-              className={`w-12 h-12 ${milestone.color} rounded-full flex items-center justify-center mr-4`}
-            >
-              <Icon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-primary-dark">
-                {milestone.year}
-              </div>
-              <div className="text-sm text-gray-600">
-                {milestone.period}
-              </div>
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-primary-dark mb-3">
-            {milestone.title}
-          </h3>
-          <p className="text-gray-700 leading-relaxed">
-            {milestone.description}
-          </p>
+      <div className="flex justify-center mb-4">
+        <div className="w-12 h-12 bg-primary-dark/10 rounded-xl flex items-center justify-center">
+          <Icon className="w-6 h-6 text-primary-dark" />
         </div>
       </div>
-
-
-      {/* Ảnh minh họa */}
-      <div
-        className={`w-full lg:w-5/12 ${
-          isEven ? 'lg:pl-8' : 'lg:pr-8'
-        }`}
-      >
-        {milestone.image && !imageError ? (
-          <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg relative">
-            <Image
-              src={milestone.image}
-              alt={`${milestone.title} - ${milestone.year}`}
-              width={800}
-              height={600}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-          </div>
-        ) : (
-          <div className="aspect-[4/3] bg-gradient-to-br from-white to-primary-dark rounded-lg overflow-hidden flex items-center justify-center">
-            <span className="text-6xl">📸</span>
-          </div>
-        )}
+      <div className="text-4xl md:text-5xl font-bold text-primary-dark mb-2">
+        {count}
+      </div>
+      <div className="text-sm md:text-base text-gray-600 font-medium">
+        {label}
       </div>
     </div>
   )
@@ -130,7 +307,6 @@ export default function LichSuPage() {
           const mappedMilestones: Milestone[] = response.data.map((history: History) => {
             const year = parseInt(history.year) || 1951
             const Icon = getIconByTitle(history.title)
-            const color = getColorByPeriod(history.period)
             
             return {
               year,
@@ -138,7 +314,7 @@ export default function LichSuPage() {
               period: history.period,
               description: history.description,
               icon: Icon,
-              color,
+              color: 'bg-primary-dark',
               image: history.image || '/img/ảnh 3.png', // Fallback image
             }
           })
@@ -162,7 +338,7 @@ export default function LichSuPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -177,7 +353,7 @@ export default function LichSuPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -196,68 +372,85 @@ export default function LichSuPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
-      <div className="container mx-auto px-4 py-8 flex-1">
-        <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-dark mb-4">
+      <div className="flex-1">
+        {/* Hero Header Section */}
+        <section className="py-10 md:py-12 bg-white">
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
+        >
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
             Lịch sử 75 năm
           </h1>
-          <p className="text-lg text-gray-700">
+          <p className="text-xl text-gray-600">
             Dòng lịch sử bệnh viện – 1951–2026
           </p>
-        </div>
+          <div className="w-24 h-1 bg-blue-600 mx-auto mt-6 rounded-full" />
+        </motion.div>
+        </section>
 
-        {/* Timeline dọc cho mobile, ngang cho desktop */}
-        <div className="relative">
-          {/* Đường timeline */}
-          <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-primary-dark opacity-30"></div>
-          <div className="lg:hidden absolute left-8 w-1 h-full bg-primary-dark opacity-30"></div>
-
-          {/* Các mốc */}
-          {milestones.length > 0 ? (
-            <div className="space-y-12 lg:space-y-24">
-              {milestones.map((milestone, index) => {
-                const Icon = milestone.icon
-                const isEven = index % 2 === 0
-                
-                return (
-                  <MilestoneItem 
-                    key={milestone.year}
-                    milestone={milestone}
-                    Icon={Icon}
-                    isEven={isEven}
-                  />
-                )
-              })}
+        {/* Milestones Section */}
+        {milestones.length > 0 ? (
+          <section className="bg-white relative">
+            {/* Thanh dọc ở giữa - chỉ hiển thị trên desktop */}
+            <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-1.5 bg-primary-dark/60 transform -translate-x-1/2"></div>
+            
+            {milestones.map((milestone, index) => {
+              const Icon = milestone.icon
+              const isReversed = index % 2 === 1 // Item thứ 2, 4, 6... sẽ đảo ngược
+              
+              return (
+                <MilestoneItem 
+                  key={milestone.year}
+                  milestone={milestone}
+                  Icon={Icon}
+                  isReversed={isReversed}
+                />
+              )
+            })}
+          </section>
+        ) : (
+          <section className="py-24">
+            <div className="container mx-auto px-4">
+              <div className="text-center">
+                <p className="text-lg text-gray-600">Chưa có dữ liệu lịch sử</p>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-lg text-gray-600">Chưa có dữ liệu lịch sử</p>
-            </div>
-          )}
-        </div>
+          </section>
+        )}
 
-        {/* Thống kê */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary-dark mb-2">75</div>
-            <div className="text-sm text-gray-600">Năm phát triển</div>
+        {/* Stats Section */}
+        <section className="py-16 md:py-24 bg-gray-0">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-6xl mx-auto">
+              <StatItem 
+                value="75" 
+                label="Năm phát triển" 
+                icon={Calendar}
+              />
+              <StatItem 
+                value="1000+" 
+                label="Cán bộ nhân viên" 
+                icon={Users}
+              />
+              <StatItem 
+                value="500K" 
+                label="Bệnh nhân/năm" 
+                icon={Activity}
+              />
+              <StatItem 
+                value="50+" 
+                label="Khoa phòng" 
+                icon={Building2}
+              />
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary-dark mb-2">1000+</div>
-            <div className="text-sm text-gray-600">Cán bộ nhân viên</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary-dark mb-2">500K+</div>
-            <div className="text-sm text-gray-600">Bệnh nhân/năm</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary-dark mb-2">50+</div>
-            <div className="text-sm text-gray-600">Khoa phòng</div>
-          </div>
-        </div>
+        </section>
       </div>
 
       <Footer />

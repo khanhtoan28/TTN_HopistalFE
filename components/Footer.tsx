@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -8,8 +9,14 @@ export default function Footer() {
           {/* Logo và thông tin */}
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <span className="text-primary-dark font-bold text-xl">BV</span>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                <Image 
+                  src="/img/logo.webp" 
+                  alt="Logo Bệnh viện Trung ương Thái Nguyên"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                />
               </div>
               <div>
                 <div className="font-semibold">BỆNH VIỆN TRUNG ƯƠNG</div>

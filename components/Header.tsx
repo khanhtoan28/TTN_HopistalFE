@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 
 export default function Header() {
   const pathname = usePathname()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const menuItems = [
     { name: 'Sổ vàng', path: '/golden-book' },
@@ -13,6 +15,14 @@ export default function Header() {
     { name: 'Lịch sử', path: '/history' },
     { name: 'Giới thiệu', path: '/introduction' },
   ]
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
+
+  const closeMenu = () => {
+    setIsMenuOpen(false)
+  }
 
   return (
     <header className="bg-primary-dark text-white shadow-lg sticky top-0 z-50">
@@ -35,7 +45,7 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Menu */}
+          {/* Desktop Menu */}
           <nav className="hidden md:flex items-center space-x-6">
             {menuItems.map((item) => (
               <Link
@@ -53,22 +63,64 @@ export default function Header() {
           </nav>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden p-2">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+          <button 
+            className="md:hidden p-2"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            )}
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <nav className="md:hidden mt-4 pb-4 border-t border-white border-opacity-20">
+            <div className="flex flex-col space-y-2 pt-4">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  onClick={closeMenu}
+                  className={`px-4 py-3 rounded-lg transition-all duration-300 ${
+                    pathname === item.path
+                      ? 'bg-white text-primary-dark font-semibold'
+                      : 'hover:bg-white hover:bg-opacity-20'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
       </div>
     </header>
   )

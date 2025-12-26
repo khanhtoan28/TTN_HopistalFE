@@ -1,6 +1,7 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Award, Archive, Clock } from 'lucide-react'
 
 export default function Home() {
@@ -9,139 +10,360 @@ export default function Home() {
       <Header />
 
       {/* Hero Banner */}
-      <section className="relative h-[600px] md:h-[700px] overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 bg-[url('/img/banner.jpg')] bg-cover bg-center"></div>
-        {/* Overlay để text dễ đọc */}
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/100 via-primary-dark/50 to-primary-dark/10"></div>
+      <section className="relative w-full min-h-[500px] md:min-h-[500px] pb-30 md:pb-42 z-20">
+        {/* Background Image - Bọc trong div riêng có overflow-hidden để ảnh không tràn */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <div className="absolute inset-0 w-full h-full bg-[url('/img/banner.jpg')] bg-cover bg-center"></div>
+          {/* Dark blue gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/50 via-primary-dark/60 to-primary-dark/50"></div>
+        </div>
         
-        <div className="relative container mx-auto px-4 h-full flex items-center justify-center z-10">
-          <div className="text-center text-white max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
+        <div className="relative container mx-auto px-4 h-full min-h-[600px] md:min-h-[700px] flex items-center z-10">
+          <div className="text-left text-white max-w-3xl">
+            {/* Yellow Badge */}
+            <div className="inline-block bg-[#D4AF37] text-primary-dark px-4 py-2 rounded-md text-sm font-bold mb-6 shadow-lg">
+              BỆNH VIỆN HẠNG ĐẶC BIỆT
+            </div>
+            
+            {/* Main Headline */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg leading-tight">
               PHÒNG TRUYỀN THỐNG
             </h1>
-            <h2 className="text-2xl md:text-3xl font-semibold mb-4 drop-shadow-lg">
+            
+            {/* Subheadline */}
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 drop-shadow-lg">
               BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN
             </h2>
-            <p className="text-xl md:text-2xl mb-8 text-white drop-shadow-lg">
-              Kỷ niệm 75 năm thành lập – 1951–2026
+            
+            {/* Subtext */}
+            <p className="text-lg md:text-xl mb-8 text-white/90 drop-shadow-lg">
+              Kỷ niệm 75 năm thành lập: 1951–2026
             </p>
-            <Link href="/golden-book" className="btn-primary inline-block hover:bg-white hover:text-primary-dark">
-              Khám phá
-            </Link>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link 
+                href="/golden-book" 
+                className="inline-block bg-primary-dark text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-dark/90 transition-all duration-300 shadow-lg text-center"
+              >
+                Đặt lịch khám ngay
+              </Link>
+              <Link 
+                href="/golden-book" 
+                className="inline-block bg-transparent text-white border-2 border-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-primary-dark transition-all duration-300 text-center"
+              >
+                Xem Video Giới Thiệu
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Cards - Floating on bottom of hero */}
+        <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-4">
+          <div className="container mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
+              {/* Card 1: Năm phát triển */}
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+                  75
+                </div>
+                <div className="text-xs md:text-base text-gray-600">
+                  Năm phát triển
+                </div>
+              </div>
+
+              {/* Card 2: Cán bộ nhân viên */}
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+                  1000+
+                </div>
+                <div className="text-xs md:text-base text-gray-600">
+                  Cán bộ nhân viên
+                </div>
+              </div>
+
+              {/* Card 3: Bệnh nhân/năm */}
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+                  500K+
+                </div>
+                <div className="text-xs md:text-base text-gray-600">
+                  Bệnh nhân/năm
+                </div>
+              </div>
+
+              {/* Card 4: Khoa phòng */}
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+                  50+
+                </div>
+                <div className="text-xs md:text-base text-gray-600">
+                  Khoa phòng
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* History & Mission Section */}
+      <section className="mt-20 py-24 md:py-32 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left Column - Text Content */}
+            <div className="order-2 lg:order-1">
+              
+              
+              {/* Headline */}
+              <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">
+                Lịch sử & Sứ mệnh
+              </h2>
+              {/* Golden Accent Line */}
+              <div className="w-16 h-1 bg-yellow-500 mb-6"></div>
+              {/* Paragraph 1 */}
+              <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                Được thành lập vào năm 1951, Bệnh viện Trung ương Thái Nguyên là một trong những trung tâm y tế hàng đầu của Việt Nam. Với truyền thống lâu đời và tinh thần đổi mới sáng tạo, chúng tôi không ngừng đầu tư vào công nghệ y tế tiên tiến nhất.
+              </p>
+              
+              {/* Paragraph 2 */}
+              <p className="text-gray-700 text-lg leading-relaxed">
+                Chúng tôi không chỉ là nơi điều trị, mà còn là trung tâm đào tạo, nghiên cứu khoa học uy tín, đóng góp to lớn vào sự nghiệp bảo vệ sức khỏe nhân dân toàn quốc.
+              </p>
+            </div>
+
+            {/* Right Column - Image */}
+            <div className="order-1 lg:order-2">
+              <div className="relative rounded-3xl shadow-2xl overflow-hidden aspect-[3/2]">
+                <Image 
+                  src="/img/anh3.jpg" 
+                  alt="Bác sĩ và bệnh nhân" 
+                  width={700}
+                  height={400}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+       {/* Timeline Hành trình 75 năm */}
+       <section className="pt-40 md:pt-20 pb-20 bg-[#0A2F57] relative overflow-hidden z-10">
+        <div className="container mx-auto px-1">
+          {/* Title Section */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Hành trình 75 năm phát triển
+            </h2>
+            <div className="flex items-center justify-start md:justify-center max-w-4xl mx-auto">
+              <div className="w-24 h-0.5 bg-[#D4AF37]"></div>
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div className="relative">
+            {/* Horizontal Line - Hidden on mobile, shown on desktop */}
+            <div className="hidden md:block absolute left-0 right-0 top-24 h-0.5 bg-white/30"></div>
+
+            {/* Timeline Items */}
+            <div className="relative grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-4">
+              {/* 1951 */}
+              <div className="relative group">
+                <div className="flex flex-col items-center">
+                  {/* Year */}
+                  <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
+                    1951
+                  </div>
+                  
+                  {/* Gold Dot */}
+                  <div className="relative z-10 mb-8">
+                    <div className="w-4 h-4 rounded-full bg-[#D4AF37] border-4 border-[#0A2F57] group-hover:bg-[#E5C158] group-hover:shadow-lg group-hover:shadow-[#D4AF37]/50 transition-all duration-300"></div>
+                  </div>
+                  
+                  {/* Description */}
+                  <div className="text-center group-hover:-translate-y-1 transition-transform duration-300">
+                    <h3 className="text-lg font-semibold text-white mb-3">Thành lập</h3>
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      Bệnh viện được thành lập, đánh dấu sự khởi đầu của hành trình phục vụ nhân dân
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 1970 */}
+              <div className="relative group">
+                <div className="flex flex-col items-center">
+                  {/* Year */}
+                  <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
+                    1970
+                  </div>
+                  
+                  {/* Gold Dot */}
+                  <div className="relative z-10 mb-8">
+                    <div className="w-4 h-4 rounded-full bg-[#D4AF37] border-4 border-[#0A2F57] group-hover:bg-[#E5C158] group-hover:shadow-lg group-hover:shadow-[#D4AF37]/50 transition-all duration-300"></div>
+                  </div>
+                  
+                  {/* Description */}
+                  <div className="text-center group-hover:-translate-y-1 transition-transform duration-300">
+                    <h3 className="text-lg font-semibold text-white mb-3">Thời chiến</h3>
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      Vượt qua khó khăn trong thời kỳ chiến tranh, tiếp tục phục vụ người dân
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 1990 */}
+              <div className="relative group">
+                <div className="flex flex-col items-center">
+                  {/* Year */}
+                  <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
+                    1990
+                  </div>
+                  
+                  {/* Gold Dot */}
+                  <div className="relative z-10 mb-8">
+                    <div className="w-4 h-4 rounded-full bg-[#D4AF37] border-4 border-[#0A2F57] group-hover:bg-[#E5C158] group-hover:shadow-lg group-hover:shadow-[#D4AF37]/50 transition-all duration-300"></div>
+                  </div>
+                  
+                  {/* Description */}
+                  <div className="text-center group-hover:-translate-y-1 transition-transform duration-300">
+                    <h3 className="text-lg font-semibold text-white mb-3">Hiện đại hóa</h3>
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      Bắt đầu quá trình hiện đại hóa trang thiết bị và cơ sở hạ tầng
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2025 */}
+              <div className="relative group">
+                <div className="flex flex-col items-center">
+                  {/* Year */}
+                  <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
+                    2025
+                  </div>
+                  
+                  {/* Gold Dot */}
+                  <div className="relative z-10 mb-8">
+                    <div className="w-4 h-4 rounded-full bg-[#D4AF37] border-4 border-[#0A2F57] group-hover:bg-[#E5C158] group-hover:shadow-lg group-hover:shadow-[#D4AF37]/50 transition-all duration-300"></div>
+                  </div>
+                  
+                  {/* Description */}
+                  <div className="text-center group-hover:-translate-y-1 transition-transform duration-300">
+                    <h3 className="text-lg font-semibold text-white mb-3">Kỹ thuật cao</h3>
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      Ứng dụng công nghệ kỹ thuật cao, trở thành bệnh viện hàng đầu khu vực
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* 3 Khối giới thiệu */}
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Sổ vàng */}
-            <Link href="/golden-book" className="card group cursor-pointer">
-              <div className="flex flex-col items-center text-center">
-                <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#C9A227' }}>
-                  <Award className="w-10 h-10" style={{ color: '#8B6B00' }} />
+            <Link 
+              href="/golden-book" 
+              className="group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
+            >
+              <div className="flex flex-col items-center text-center h-full">
+                {/* Icon Circle - Gold */}
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-yellow-200/50 transition-all duration-300">
+                  <Award className="w-12 h-12 text-yellow-600 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
-                <h3 className="group-hover:scale-110 transition-transform opacity-50 group-hover:opacity-100 text-2xl font-bold mb-3" style={{ color: '#C9A227' }}>
+                
+                {/* Title */}
+                <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-yellow-700 transition-colors duration-300">
                   Sổ vàng
                 </h3>
-                <p className="text-gray-700 mb-4">
+                
+                {/* Subtitle */}
+                <p className="text-base font-medium text-gray-600 mb-4">
                   Thành tựu 75 năm
                 </p>
-                <p className="text-sm text-gray-600">
+                
+                {/* Description */}
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Xem các bằng khen, giấy khen và thành tích đạt được qua các thời kỳ
                 </p>
               </div>
+              
+              {/* Subtle gradient overlay on hover */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-yellow-50/0 to-yellow-50/0 group-hover:from-yellow-50/30 group-hover:to-transparent transition-all duration-300 pointer-events-none"></div>
             </Link>
 
             {/* Hiện vật */}
-            <Link href="/artifact" className="card group cursor-pointer">
-              <div className="flex flex-col items-center text-center">
-                <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#8B5A2B' }}>
-                  <Archive className="w-10 h-10" style={{ color: '#5C3A1E' }} />
+            <Link 
+              href="/artifact" 
+              className="group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
+            >
+              <div className="flex flex-col items-center text-center h-full">
+                {/* Icon Circle - Brown */}
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-amber-200/50 transition-all duration-300">
+                  <Archive className="w-12 h-12 text-amber-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
-                <h3 className="group-hover:scale-110 transition-transform opacity-50 group-hover:opacity-100 text-2xl font-bold mb-3" style={{ color: '#8B5A2B' }}>
+                
+                {/* Title */}
+                <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-amber-700 transition-colors duration-300">
                   Hiện vật
                 </h3>
-                <p className="text-gray-700 mb-4">
+                
+                {/* Subtitle */}
+                <p className="text-base font-medium text-gray-600 mb-4">
                   Tư liệu quý
                 </p>
-                <p className="text-sm text-gray-600">
+                
+                {/* Description */}
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Khám phá các hiện vật lịch sử, thiết bị và tư liệu quý giá của bệnh viện
                 </p>
               </div>
+              
+              {/* Subtle gradient overlay on hover */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50/0 to-amber-50/0 group-hover:from-amber-50/30 group-hover:to-transparent transition-all duration-300 pointer-events-none"></div>
             </Link>
 
             {/* Dòng lịch sử */}
-            <Link href="/history" className="card group cursor-pointer">
-              <div className="flex flex-col items-center text-center">
-                <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#0B5ED7' }}>
-                  <Clock className="w-10 h-10 text-white" />
+            <Link 
+              href="/history" 
+              className="group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
+            >
+              <div className="flex flex-col items-center text-center h-full">
+                {/* Icon Circle - Hospital Blue */}
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-blue-200/50 transition-all duration-300">
+                  <Clock className="w-12 h-12 text-primary-dark group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
-                <h3 className="group-hover:scale-110 transition-transform opacity-50 group-hover:opacity-100 text-2xl font-bold mb-3" style={{ color: '#0B5ED7' }}>
+                
+                {/* Title */}
+                <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-primary-dark transition-colors duration-300">
                   Dòng lịch sử
                 </h3>
-                <p className="text-gray-700 mb-4">
+                
+                {/* Subtitle */}
+                <p className="text-base font-medium text-gray-600 mb-4">
                   Các thời kỳ phát triển
                 </p>
-                <p className="text-sm text-gray-600">
+                
+                {/* Description */}
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Tìm hiểu hành trình 75 năm phát triển qua các cột mốc quan trọng
                 </p>
               </div>
+              
+              {/* Subtle gradient overlay on hover */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:to-transparent transition-all duration-300 pointer-events-none"></div>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Các cột mốc vàng */}
-      <section className="py-16 bg-blue-50">
-        <div className="container mx-auto px-4">
-          <h2 className="section-title">Các cột mốc vàng</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* 1951 */}
-            <div className="card text-center">
-              <div className="text-4xl font-bold text-primary-dark mb-2">1951</div>
-              <div className="w-16 h-1 bg-primary-dark mx-auto mb-4"></div>
-              <h3 className="text-xl font-semibold mb-2">Thành lập</h3>
-              <p className="text-sm text-gray-700">
-                Bệnh viện được thành lập, đánh dấu sự khởi đầu của hành trình phục vụ nhân dân
-              </p>
-            </div>
-
-            {/* 1970 */}
-            <div className="card text-center">
-              <div className="text-4xl font-bold text-primary-dark mb-2">1970</div>
-              <div className="w-16 h-1 bg-primary-dark mx-auto mb-4"></div>
-              <h3 className="text-xl font-semibold mb-2">Thời chiến</h3>
-              <p className="text-sm text-gray-700">
-                Vượt qua khó khăn trong thời kỳ chiến tranh, tiếp tục phục vụ người dân
-              </p>
-            </div>
-
-            {/* 1990 */}
-            <div className="card text-center">
-              <div className="text-4xl font-bold text-primary-dark mb-2">1990</div>
-              <div className="w-16 h-1 bg-primary-dark mx-auto mb-4"></div>
-              <h3 className="text-xl font-semibold mb-2">Hiện đại hóa</h3>
-              <p className="text-sm text-gray-700">
-                Bắt đầu quá trình hiện đại hóa trang thiết bị và cơ sở hạ tầng
-              </p>
-            </div>
-
-            {/* 2025 */}
-            <div className="card text-center">
-              <div className="text-4xl font-bold text-primary-dark mb-2">2025</div>
-              <div className="w-16 h-1 bg-primary-dark mx-auto mb-4"></div>
-              <h3 className="text-xl font-semibold mb-2">Kỹ thuật cao</h3>
-              <p className="text-sm text-gray-700">
-                Ứng dụng công nghệ kỹ thuật cao, trở thành bệnh viện hàng đầu khu vực
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+     
 
       <Footer />
     </div>

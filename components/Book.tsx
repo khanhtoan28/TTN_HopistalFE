@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+
 import Image from 'next/image'
 import HTMLFlipBook from 'react-pageflip'
 
@@ -29,54 +30,97 @@ const FOUNDING_YEAR = 1951
 export default function Book({ certificates, onPageClick }: BookProps) {
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const flipBookRef = useRef<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [bookSize, setBookSize] = useState({ width: PAGE_WIDTH * 2, height: PAGE_HEIGHT })
 
-  // Resize flipbook theo viewport bằng API updateSize (tỷ lệ A4 chuẩn)
-  useEffect(() => {
-    const resize = () => {
-      if (!flipBookRef.current) return
+  // Tạo 2 hàm điều khiển flip
+  const disableFlip = () => {
+    try {
+      const pageFlip = flipBookRef.current?.pageFlip?.()
+      if (pageFlip && typeof pageFlip.setAllowPageFlip === 'function') {
+        pageFlip.setAllowPageFlip(false)
+      }
+    } catch (e) {
+      console.warn('Failed to disable flip:', e)
+    }
+  }
 
-      // Spread = 2 trang A4 cạnh nhau
-      const spreadW = PAGE_WIDTH   // 1190px
-      const spreadH = PAGE_HEIGHT      // 842px
+  const enableFlip = () => {
+    try {
+      const pageFlip = flipBookRef.current?.pageFlip?.()
+      if (pageFlip && typeof pageFlip.setAllowPageFlip === 'function') {
+        pageFlip.setAllowPageFlip(true)
+      }
+    } catch (e) {
+      console.warn('Failed to enable flip:', e)
+    }
+  }
 
-      const vw = window.innerWidth * 0.9
-      const vh = window.innerHeight * 0.9
+  // Hàm tính toán kích thước (Responsive Logic)
+  const resize = useCallback(() => {
+    const vw = window.innerWidth
+    const vh = window.innerHeight
 
-      // Tính scale để fit viewport
-      const scale = Math.min(vw / spreadW, vh / spreadH)
+    // Xác định mobile dựa trên width (< 768px là mobile/tablet dọc)
+    const _isMobile = vw < 768
+    setIsMobile(_isMobile)
 
-      // Kích thước sau khi scale
-      const width = spreadW * scale
-      const height = spreadH * scale
+    let width, height
 
-      // Gọi API updateSize của pageflip
-      try {
-        const pageFlip = flipBookRef.current?.pageFlip?.()
-        if (pageFlip && typeof pageFlip.updateSize === 'function') {
-          pageFlip.updateSize(width, height)
-        }
-      } catch (error) {
-        console.warn('Failed to update flipbook size:', error)
+    if (_isMobile) {
+      // --- MOBILE (1 TRANG) ---
+      // Tỷ lệ khung hình mong muốn: 1 trang A4 (595/842)
+      const pageRatio = PAGE_WIDTH / PAGE_HEIGHT
+      
+      // Chiếm 95% chiều rộng màn hình
+      const targetWidth = vw * 0.95
+      const targetHeight = vh * 0.8
+
+      // Tính toán để fit vào màn hình mà không méo
+      if (targetWidth / pageRatio > targetHeight) {
+        // Nếu bị giới hạn bởi chiều cao
+        height = targetHeight
+        width = height * pageRatio
+      } else {
+        // Nếu bị giới hạn bởi chiều rộng
+        width = targetWidth
+        height = width / pageRatio
+      }
+    } else {
+      // --- DESKTOP (2 TRANG - SPREAD) ---
+      // Tỷ lệ khung hình: 2 trang A4 ghép lại ((595*2)/842)
+      const spreadRatio = (PAGE_WIDTH * 2) / PAGE_HEIGHT
+      
+      const targetWidth = vw * 0.9
+      const targetHeight = vh * 0.9
+
+      if (targetWidth / spreadRatio > targetHeight) {
+        height = targetHeight
+        width = height * spreadRatio
+      } else {
+        width = targetWidth
+        height = width / spreadRatio
       }
     }
 
-    // Delay để đảm bảo flipbook đã render xong (modal animation + DOM ready)
-    let rafId: number | null = null
-    let timeoutId: NodeJS.Timeout | null = null
+    setBookSize({ width, height })
 
-    rafId = requestAnimationFrame(() => {
-      timeoutId = setTimeout(() => {
-        resize()
-      }, 200)
-    })
-
-    window.addEventListener('resize', resize)
-    return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId)
-      if (timeoutId !== null) clearTimeout(timeoutId)
-      window.removeEventListener('resize', resize)
+    // Update size cho thư viện
+    if (flipBookRef.current?.pageFlip?.()) {
+      try {
+        flipBookRef.current.pageFlip().updateSize(width, height)
+      } catch (e) {
+        console.warn('Flipbook updateSize error', e)
+      }
     }
   }, [])
+
+  useEffect(() => {
+    // Gọi resize lần đầu và lắng nghe sự kiện
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
+  }, [resize])
 
   // Tính toán số trang
   // Trang 0 = bìa, Trang 1 = mặt sau bìa (cert[0]), 
@@ -161,14 +205,35 @@ export default function Book({ certificates, onPageClick }: BookProps) {
 
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-visible py-1">
           <div className="mb-2.5 w-full flex-shrink-0 flex justify-center">
-            <div 
+            <div
               className="certificate-image-wrapper"
               style={{ width: '280px', height: '220px' }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation(); // Ngăn sự kiện click truyền lên Flipbook
-                if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation(); // Ngăn chặn tuyệt đối trên các trình duyệt khắt khe
-                setZoomImage(cert.image);
+              onPointerDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                // Khóa flip NGAY LẬP TỨC trước khi react-pageflip xử lý
+                disableFlip()
+              }}
+              onPointerMove={(e) => {
+                // Giữ flip bị khóa khi di chuyển pointer trong vùng ảnh
+                e.stopPropagation()
+              }}
+              onPointerUp={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setZoomImage(cert.image)
+                // Delay để đảm bảo zoom modal mở trước khi enable flip
+                setTimeout(() => {
+                  enableFlip()
+                }, 200)
+              }}
+              onPointerCancel={(e) => {
+                e.stopPropagation()
+                enableFlip()
+              }}
+              onPointerLeave={(e) => {
+                e.stopPropagation()
+                enableFlip()
               }}
             >
               <div className="certificate-frame" style={{ width: '100%', height: '100%' }}>
@@ -304,10 +369,14 @@ export default function Book({ certificates, onPageClick }: BookProps) {
         .certificate-image-wrapper {
           position: relative;
           cursor: zoom-in;
-          /* Quan trọng: Đảm bảo vùng này bắt được click trước khi Flipbook can thiệp */
-          z-index: 100; 
+          z-index: 1000 !important; 
           pointer-events: auto !important;
-          touch-action: none; /* Ngăn chặn lật trang bằng cảm ứng khi chạm vào ảnh */
+          touch-action: none; /* Ngăn default touch behaviors */
+        }
+        
+        .certificate-image-wrapper * {
+          pointer-events: auto !important;
+          touch-action: none;
         }
 
         /* Đảm bảo vùng chứa trang không "nuốt" mất click của các phần tử con */
@@ -399,30 +468,31 @@ export default function Book({ certificates, onPageClick }: BookProps) {
 
       <div className="w-full h-full flex items-center justify-center overflow-hidden">
         <HTMLFlipBook
+          key={isMobile ? 'mobile' : 'desktop'}
           ref={flipBookRef}
-          width={PAGE_WIDTH }
-          height={PAGE_HEIGHT}
+          width={isMobile ? bookSize.width : bookSize.width / 2}
+          height={bookSize.height}
           minWidth={300}
-          minHeight={212}
-          maxWidth={2400}
-          maxHeight={1684}
+          minHeight={400}
+          maxWidth={1000}
+          maxHeight={1400}
           maxShadowOpacity={0.5}
           showCover={true}
-          mobileScrollSupport={false}
+          mobileScrollSupport={true}
           className="book-container"
-          style={{}}
+          style={{ margin: '0 auto' }}
           startPage={0}
           size="fixed"
           drawShadow={true}
           flippingTime={800}
-          usePortrait={false}
+          usePortrait={isMobile}
           startZIndex={0}
           autoSize={false}
           clickEventForward={false}
           useMouseEvents={true}
           swipeDistance={30}
           showPageCorners={true}
-          disableFlipByClick={true}
+          disableFlipByClick={false}
         >
           {pages}
         </HTMLFlipBook>
