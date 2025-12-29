@@ -292,7 +292,7 @@ export default function Home() {
       </section>
 
       {/* 3 Khối giới thiệu */}
-      <section className="mt-20 py-20 bg-gray-50">
+      <section className="mt-20 py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Sổ vàng */}
@@ -391,7 +391,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10 py-20 md:py-10 bg-white">
+      <section className="mt-10 py-20 md:py-10 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {[
@@ -433,7 +433,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-20 py-20 bg-gray-50">
+      <section className="mt-20 py-20 bg-white">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-12">
@@ -507,7 +507,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="mt-20 pt-20 bg-gray-50 pb-0">
+      <section className="mt-20 pt-20 bg-white pb-0">
         <div className="container mx-auto px-4">
           {/* Blue Card Container */}
           <div className="bg-[#004795] rounded-t-[80px] py-16 px-8 md:px-20 text-center shadow-lg">
